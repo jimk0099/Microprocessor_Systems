@@ -1,0 +1,49 @@
+  		LXI B,2710H
+
+START:
+		LDA 2000H                                          
+		CPI 64H				;Compare with 100
+		JNC MEG_99				;Jump if A 100
+		MVI D,00H				;Set a counter equal to 0
+
+KATW_APO_100:
+		SUI 0AH             	;Subtract 10
+		INR D
+		JNC KATW_APO_100 		;Jump if A still  10
+		DCR D           
+		ADI 0AH
+		MOV E,A      			;E gets Monades
+		MOV A,D       		;A gets Dekades in 4 LSB
+		RLC
+		RLC	
+		RLC
+		RLC      				;A gets Dekades in 4 MSB
+		ADD E         		;A gets also Monades in 4 LSB
+		CMA
+		STA 3000H        		;Store the result
+		JMP START
+
+MEG_99:
+		CPI C8H         		;Compare with 200
+		JNC MEG_199    		;Jump if A 200
+		MVI A,F0H      		;4 LSB leds open
+		STA 3000H
+		CALL DELB
+		MVI A,FFH       		;4 LSB leds closed
+		STA 3000H
+		CALL DELB
+		JMP START
+
+MEG_199:
+		MVI A,0FH        		;4 MSB leds open
+		STA 3000H 
+		CALL DELB
+		MVI A,FFH     		;4 MSB leds closed                 
+		STA 3000H
+		CALL DELB
+		JMP START
+		END
+
+
+
+
