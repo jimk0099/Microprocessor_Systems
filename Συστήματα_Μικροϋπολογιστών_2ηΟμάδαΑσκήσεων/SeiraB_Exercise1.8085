@@ -1,0 +1,39 @@
+	IN 10H
+	MVI A,00H			;numbers from 0 to 255
+	MVI D,00H			;counter for numbers from 10H to 60H
+	LXI H,0900H		;addresses
+	LXI B,0000H		;counter for ‘1’
+START:
+	MOV M,A			;store in memory
+	MOV E,A			;store A for later
+	JMP ROTATE
+ROTATE:
+	STC				;set CY = 1
+	CMC				;now CY = 0
+	RAR				;rotate A right
+	JNC FOUND_ZERO		;If MSB of A is 0 go to FOUND_ZERO
+	INX B				;else increase B by one
+FOUND_ZERO:
+	CPI 00H			;If A is 00H after rotation
+	JZ RETRIEVE_A		;get initial A
+	JMP ROTATE			;else rotate again
+RETRIEVE_A:
+	MOV A,E			;E has initial value of A
+	JMP CHECK			
+CHECK:
+ 	CPI 10H			;If number less than 10H
+	JC NEXT			;go to NEXT
+	CPI 60H			;else check if number less than 60H
+	JC BETWEEN			;if yes go to BETWEEN
+	JNZ NEXT			;else go to NEXT
+BETWEEN:
+	INR D				;found number between in [10H,60H]
+	JMP NEXT			
+NEXT:
+	INX H				;next address
+	INR A				;next number
+	CPI 00H				;if A gets bigger than 255
+	JZ FINISH			;end
+	JMP START			;else go to START
+FINISH:
+	END

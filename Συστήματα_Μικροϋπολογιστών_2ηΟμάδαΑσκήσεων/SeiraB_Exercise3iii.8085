@@ -1,0 +1,134 @@
+	IN 10H
+	LXI H,08FAH		;addresses for the messages 08FAH-08FFH
+	MVI M,10H			;clear the screen
+	LXI H,08FBH		
+	MVI M,10H		
+	LXI H,08FCH		
+	MVI M,10H		
+	LXI H,08FDH		
+	MVI M,10H		
+	LXI H,08FEH		
+	MVI M,10H		
+	LXI H,08FFH		
+	MVI M,10H		
+	
+SCAN3:
+	MVI A,F7H			;line3 - keys 1,2,3
+	STA 2800H			;scan
+	LDA 1800H			;read
+	MVI B,07H
+	ANA B
+	
+	CPI 06H			;column 0
+	JZ KEY1			;check for key 1
+	CPI 05H			;column 1
+	JZ KEY2			;check for key 2
+CPI 03H				;column 2
+	JZ KEY3			;check for key 3
+	
+	
+	CALL SHOW
+	JMP SCAN1
+KEY3:					;show key 3
+	LXI H,08FFH
+	MVI M,00H			;0
+	LXI H,08FEH
+	MVI M,03H			;3
+	CALL SHOW
+	JMP SCAN1
+KEY2:					;show key 2
+	LXI H,08FFH
+	MVI M,00H			;0
+	LXI H,08FEH
+	MVI M,02H			;2
+	CALL SHOW
+	JMP SCAN1
+KEY1:					;show key 1
+	LXI H,08FFH
+	MVI M,00H			;0
+	LXI H,08FEH	
+	MVI M,01H			;1
+	CALL SHOW
+	
+SCAN1:
+	MVI A,FDH			;line1 - keys FETCH ADRS, FETCH REG, RUN
+	STA 2800H
+	LDA 1800H
+	MVI B,07H
+	ANA B
+	
+	CPI 03H			;column 2
+	JZ KEYFETCHADRS		;check for key FETCH ADRS
+	CPI 05H			;column 1
+	JZ KEYFETCHREG		;check for key FETCH REG
+	CPI 06H			;column 0
+	JZ KEYRUN			;check for key RUN
+	
+	CALL SHOW
+	JMP SCAN6
+KEYFETCHADRS:			;show FETCH ADRS
+	LXI H,08FFH
+	MVI M,08H			;8
+	LXI H,08FEH	
+	MVI M,02H			;2
+	CALL SHOW
+	JMP SCAN6
+KEYFETCHREG:			;show FETCH REG
+	LXI H,08FFH
+	MVI M,08H			;8
+	LXI H,08FEH
+	MVI M,00H			;0
+	CALL SHOW
+	JMP SCAN6
+KEYRUN:				;show RUN
+	LXI H,08FFH
+	MVI M,08H			;8
+	LXI H,08FEH
+	MVI M,04H			;4
+	CALL SHOW
+	
+SCAN6:
+	MVI A,BFH			;line6 - keys A, B, C
+	STA 2800H
+	LDA 1800H
+	MVI B,07H
+	ANA B
+	
+	CPI 03H
+	JZ KEYC			;check for key C
+	CPI 05H
+	JZ KEYB			;check for key B
+	CPI 06H
+	JZ KEYA			;check for key A
+	
+	CALL SHOW
+	JMP SCAN3
+KEYC:					;show key C
+	LXI H,08FFH
+	MVI M,00H			;0
+	LXI H,08FEH
+	MVI M,0CH			;C
+	CALL SHOW
+	JMP SCAN3
+KEYB:					;show key B
+	LXI H,08FFH
+	MVI M,00H			;0
+	LXI H,08FEH
+	MVI M,0BH			;B
+	CALL SHOW	
+	JMP SCAN3
+KEYA:					;show key A
+	LXI H,08FFH
+	MVI M,00H			;0
+	LXI H,08FEH
+	MVI M,0AH			;A
+	CALL SHOW
+	JMP SCAN3
+	
+SHOW:					;show on screen
+	LXI D,08FAH
+	CALL STDM
+	CALL DCD
+	RET
+	
+	END
