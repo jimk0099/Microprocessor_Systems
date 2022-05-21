@@ -1,0 +1,100 @@
+	
+	MVI C,06H				;επαναλήπτης
+	
+	IN 10H				
+
+MAIN:	
+	LXI H,0A00H	
+
+CLEAR:	
+	MVI M,10H				;CLEAR THE SCREEN WITH SPACE
+	INX H		
+	DCR C		
+	JNZ CLEAR
+	
+
+	MVI A,0DH				;ENABLE 6,5 RST 
+	SIM
+	EI
+	
+INF:	
+	LXI H,0A02H
+	MVI M,00H
+	INX H
+	MVI M,00H
+
+WAIT:	
+	CALL DISP				;SHOW 00 IN SCREEN
+			
+	JMP WAIT				;WAIT UNTIL INTERAPT
+
+	
+INTR_ROUTINE:				;INTERAPT ROUTINE START
+	MVI E,3CH				;SET TIMER(E) = 60
+	LXI B,0064H			;(BC) = 100, 100 ms
+	EI
+
+INIT:	
+
+	MVI D,0AH				;(D) = 10, (D)*(BC) = 1 sec
+
+	CALL NEXT_SEC			;COUNT SEC 	
+	
+	MVI A,00H
+	STA 3000H				;OPEN LEDS LED
+L1:	CALL DISP				;SHOW IN SCREEN
+	CALL DELB				;DELAY 100 ms
+	DCR D
+	JNZ L1					;Total delay = 1 sec
+	
+L2:	CALL DISP
+	DCR D					;EXTRA DELAY
+	JNZ L2
+	
+	DCR E					;60..0SEC
+	JNZ INIT
+	MVI A,FFH
+	STA 3000H
+	JMP INF
+
+
+NEXT_SEC:
+	PUSH PSW
+	PUSH B
+	PUSH H
+	
+	MVI B,FFH
+	MOV A,E
+
+L3:	
+	INR B
+	SUI 0AH
+	JNC L3					;μέχρι να γίνει αρνητικό
+
+	ADI 0AH 				;προσθέτουμε 10. Τώρα:
+							;(Β) = δεκάδες
+							;(Α) = μονάδες
+
+	LXI H,0A02H
+	MOV M,A				;1ο 7-seg-disp = μονάδες
+	INX H	
+	MOV M,B				;2ο 7-seg-disp = δεκάδες
+
+	POP H
+	POP B
+	POP PSW
+	RET
+
+DISP:	
+	PUSH PSW
+	PUSH D
+	LXI D,0A00H			;GO TO block 0A00H - 0A05H
+
+	CALL STDM	
+	CALL DCD
+	POP D
+	POP PSW
+	RET
+
+
+	END
